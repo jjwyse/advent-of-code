@@ -8,9 +8,7 @@ const previousRunningTotals = {
 let index = 0;
 let runningTotal = 0;
 while(true) {
-    const circularBufferIndex = index % input.length;
-    const number = Number(input[index % input.length]);
-    runningTotal = runningTotal + number;
+    runningTotal += Number(input[index % input.length]);;
     if (previousRunningTotals[runningTotal]) {
         console.log(`BINGO BANGO BONGO: ${runningTotal}`);
         break;
