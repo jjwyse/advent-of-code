@@ -1,4 +1,3 @@
-
 const fs = require('fs')
 const input = fs.readFileSync('./input.txt', 'utf8').split('\n');
 
@@ -20,13 +19,13 @@ const allSteps = input.reduce((steps, line) => {
     return steps;
 }, {});
 
-const findNextStep = (steps, runSteps) => {
+const findNextSteps = (steps, runSteps) => {
     // we've run them all
     if (Object.keys(steps).length === runSteps.length) {
-        return null;
+        return [];
     }
 
-    const possibleNextSteps = Object.keys(steps)
+    return Object.keys(steps)
         .filter(stepName => !runSteps.includes(stepName))
         .reduce((nextSteps, stepName) => {
             const step = steps[stepName];
@@ -35,18 +34,54 @@ const findNextStep = (steps, runSteps) => {
             }
             return nextSteps.sort();
         }, []);
-    return possibleNextSteps[0];
 }
 
 const runInstructions = (steps, runSteps = []) => {
-    const nextStep = findNextStep(steps, runSteps);
-    if (!nextStep) {
+    const nextSteps = findNextSteps(steps, runSteps);
+    if (nextSteps.length <= 0) {
         return runSteps;
     }
-    runSteps.push(nextStep);
+    runSteps.push(nextSteps[0]);
     return runInstructions(steps, runSteps);
 };
 
+// part 1
 const instructions = runInstructions(allSteps);
 instructions.forEach(stepName => process.stdout.write(stepName));
 console.log();
+
+// part 2
+const numberOfWorkers = 5;
+const baseCost = 60; // seconds
+const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const calculateCost = letter => alphabet.indexOf(letter.toUpperCase()) + 1 + baseCost;
+
+const runInstructionsInParallel = (steps, runSteps, runningSteps, second) => {
+    const nextSteps = findNextSteps(steps, runSteps);
+    if (nextSteps.length <= 0) {
+        return second;
+    }
+
+    // see which steps are done at our next second
+    const nowRunningSteps = runningSteps
+        .filter(s => s.doneAtSecond > second + 1);
+    const nowRunSteps = runSteps
+        .concat(runningSteps
+            .filter(s => s.doneAtSecond <= second + 1)
+            .map(s => s.name));
+
+    // see if we can start running any new step
+    nextSteps
+        .forEach(nextStep => {
+            if (nowRunningSteps.length < numberOfWorkers) {
+                const cost = calculateCost(nextStep);
+                if (!runningSteps.some(s => s.name === nextStep)) {
+                    nowRunningSteps.push({ name: nextStep, doneAtSecond: second + cost });
+                }
+            }
+        });
+
+    return runInstructionsInParallel(steps, nowRunSteps, nowRunningSteps, second + 1)
+};
+const instructionsInParallel = runInstructionsInParallel(allSteps, [], [], 0);
+console.log(instructionsInParallel);
