@@ -1,16 +1,16 @@
 file = File.open('input.txt')
 lines = file.readlines
 
-###################
-# Part 1
-###################
-
 # x, y point
 
 def plot_points(line:)
   starting_point = {
-    0 => [0],
+    0 => {
+      :ys => [0],
+      0 => 0,
+    },
   }
+  step_counter = 0
   current_x = 0
   current_y = 0
 
@@ -18,7 +18,7 @@ def plot_points(line:)
     direction = instruction[0]
     num_of_moves = instruction[1..instruction.length].to_i
 
-    (1..num_of_moves).each do |i|
+    (1..num_of_moves).each do
       case direction
         when 'R'
           current_x += 1
@@ -30,8 +30,20 @@ def plot_points(line:)
           current_y -= 1
       end
 
-      points[current_x] = [] if points[current_x].nil?
-      points[current_x] << current_y if !points[current_x].include?(current_y)
+      # Increment step counter and include when saving
+      step_counter += 1
+
+      # First time hitting this x-coordinate
+      if points[current_x].nil?
+        points[current_x] = {
+          :ys => []
+        }
+      end
+
+      if !points[current_x][:ys].include?(current_y)
+        points[current_x][:ys] << current_y
+        points[current_x][current_y] = step_counter
+      end
     end
 
     points
@@ -44,16 +56,17 @@ line_two_points = plot_points(line: lines[1].split(',').map(&:chomp))
 
 # Find intersections
 manhattan_intersections = []
-line_one_points.each do |x, ys|
+line_one_points.each do |x, line_one_metadata|
   next if line_two_points[x].nil?
 
+  ys = line_one_metadata[:ys]
+
   ys.each do |y|
-    manhattan_intersections << x.abs + y.abs if line_two_points[x].include?(y)
+    line_two_metadata = line_two_points[x]
+    if line_two_metadata[:ys].include?(y)
+      manhattan_intersections << line_one_metadata[y] + line_two_metadata[y]
+    end
   end
 end
 
 pp manhattan_intersections.sort[1]
-
-##################
-# Part 2
-###################
