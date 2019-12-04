@@ -21,17 +21,8 @@ def find_possible_passwords(range:)
     # Must be in ascending order
     next if digits_array.sort != digits_array
 
-    has_equal_adjacent_digits = false
-    digits_array.each_with_index do |digit, index|
-      # At the end, we're done
-      next if index == digits_array.length - 1
-      if digit == digits_array[index + 1]
-        has_equal_adjacent_digits = true
-      end
-    end
-
-    # Has to have at least one group of adjacent digits that are equivalent
-    next if !has_equal_adjacent_digits
+    # Special filtering specific to each part of the puzzle
+    next if !yield(digits_array)
 
     # Found one!
     possible_password
@@ -40,6 +31,47 @@ def find_possible_passwords(range:)
   valid_passwords
 end
 
-range = '284639-748759'
-possible_passwords = find_possible_passwords(range: range)
-pp possible_passwords.count
+part_one_possible_passwords = find_possible_passwords(range: '284639-748759') do |digits_array|
+  has_equal_adjacent_digits = false
+
+  digits_array.each_with_index do |digit, index|
+    # At the end, we're done
+    next if index == digits_array.length - 1
+
+    if digit == digits_array[index + 1]
+      has_equal_adjacent_digits = true
+    end
+  end
+
+  # Has to have at least one group of adjacent digits that are equivalent
+  has_equal_adjacent_digits
+end
+
+pp part_one_possible_passwords.count
+
+###################
+# Part 2
+###################
+# Password additional notes:
+#  - the two adjacent matching digits are not part of a larger group of matching digits
+
+part_two_possible_passwords = find_possible_passwords(range: '284639-748759') do |digits_array|
+  has_group_of_two = false
+
+  digits_array_grouped_by_digit = digits_array.group_by(&:itself)
+
+  digits_array.each_with_index do |digit, index|
+    # At the end, we're done
+    next if index == digits_array.length - 1
+
+    if digit == digits_array[index + 1]
+      # Make sure the number of these digits is %2 == 0.  Only need *1* pair for this password to be legit
+      has_group_of_two = has_group_of_two || digits_array_grouped_by_digit[digit].length == 2
+    end
+  end
+
+  # ALL repeated digits must be in groups of 2
+  has_group_of_two
+end
+
+pp part_two_possible_passwords.count
