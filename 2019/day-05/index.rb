@@ -45,7 +45,6 @@ def intcode_calculate(codes:, input:)
     parameter_3 = codes[opcode_index + 3]
 
     # Will be modified depending on the opcode, and how many instructions it takes
-
     case opcode
       when 1, 2
         result = opcode == 1 ? parameter_1 + parameter_2 : parameter_1 * parameter_2
@@ -54,11 +53,36 @@ def intcode_calculate(codes:, input:)
       when 3
         result_index = codes[opcode_index + 1]
         codes[result_index] = input
-
         opcode_index += 2
       when 4
         pp "Output value at index: #{opcode_index + 1} is #{parameter_1}"
         opcode_index += 2
+      when 5
+        if parameter_1 != 0
+          opcode_index = parameter_2
+        else
+          opcode_index += 3
+        end
+      when 6
+        if parameter_1 == 0
+          opcode_index = parameter_2
+        else
+          opcode_index += 3
+        end
+      when 7
+        if parameter_1 < parameter_2
+          codes[parameter_3] = 1
+        else
+          codes[parameter_3] = 0
+        end
+        opcode_index += 4
+      when 8
+        if parameter_1 == parameter_2
+          codes[parameter_3] = 1
+        else
+          codes[parameter_3] = 0
+        end
+        opcode_index += 4
       when 99
         is_continue = false
       else
@@ -69,4 +93,12 @@ def intcode_calculate(codes:, input:)
   codes
 end
 
-intcode_calculate(codes: codes, input: 1)
+#codes= [3,9,8,9,10,9,4,9,99,-1,8] # 8:1, else 0
+#codes = [3,9,7,9,10,9,4,9,99,-1,8] # <8:1 else 0
+#codes = [3,3,1108,-1,8,3,4,3,99] # 8:1, else 0
+#codes = [3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9] # < 8:1 else 0
+#codes = [3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9]
+#codes = [3,3,1105,-1,9,1101,0,0,12,4,12,99,1]
+#codes = [3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31, 1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104, 999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99]
+
+intcode_calculate(codes: codes, input: 5)
