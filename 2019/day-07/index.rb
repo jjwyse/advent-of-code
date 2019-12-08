@@ -41,7 +41,7 @@ def intcode_calculate(codes:, input:, phase_setting:)
   is_continue = true
   used_phase_setting = false
   opcode_index = 0
-  outputs = []
+  output = nil
 
   while is_continue
     # Get instruction for next code
@@ -71,7 +71,7 @@ def intcode_calculate(codes:, input:, phase_setting:)
         used_phase_setting = true
         opcode_index += 2
       when 4
-        outputs.push(parameter_1)
+        output = parameter_1
         opcode_index += 2
       when 5
         if parameter_1 != 0
@@ -101,28 +101,67 @@ def intcode_calculate(codes:, input:, phase_setting:)
         opcode_index += 4
       when 99
         is_continue = false
+        opcode_index += 4
       else
         raise "Encountered unknown opcode #{opcode}"
     end
   end
 
-  outputs[outputs.length - 1]
+  output
 end
 
+#max = -1
+#
+#[0,1,2,3,4].permutation.to_a.each do |phase_settings|
+#  next_input = 0
+#  phase_result = -1
+#
+#  # Running all 5 amplifiers
+#  phase_settings.each_with_index do |phase_setting, index|
+#    # Run intcode calculations
+#    result = intcode_calculate(codes: codes, input: next_input, phase_setting: phase_setting)
+#    next_input = result
+#
+#    # Save phase_result if we're on the last amplifier
+#    phase_result = result if index == 4
+#  end
+#
+#  if phase_result > max
+#    max = phase_result
+#  end
+#end
+#
+#pp max
+
+###################
+# Part 2
+###################
+
 max = -1
+phase_result = -1
 
-[0,1,2,3,4].permutation.to_a.each do |phase_settings|
+[5, 6, 7, 8, 9].permutation.to_a.each do |phase_settings|
+  index = 0
   next_input = 0
-  phase_result = -1
+  halt = false
 
-  # Running all 5 amplifiers
-  phase_settings.each_with_index do |phase_setting, index|
+  while !halt
     # Run intcode calculations
-    result = intcode_calculate(codes: codes, input: next_input, phase_setting: phase_setting)
-    next_input = result
+    phase_setting = phase_settings[index]
+    pp next_input
+    result = intcode_calculate(codes: codes.dup, input: next_input, phase_setting: phase_setting)
+    if result.nil?
+      pp 'boom'
+      halt = true
+      phase_result = next_input
+      break
+    end
+
 
     # Save phase_result if we're on the last amplifier
-    phase_result = result if index == 4
+    next_input = result
+    phase_result = next_input if index == 4
+    index = (index + 1) % 5
   end
 
   if phase_result > max
@@ -131,3 +170,4 @@ max = -1
 end
 
 pp max
+# 139629729
