@@ -137,37 +137,18 @@ end
 # Part 2
 ###################
 
-max = -1
-phase_result = -1
+def run_amplifiers(codes:, phase_setting:, next_input: 0)
+  amp_1_result = intcode_calculate(codes: codes.dup, input: 0, phase_setting: phase_setting[0])
+  amp_2_result = intcode_calculate(codes: codes.dup, input: amp_1_result, phase_setting: phase_setting[1])
+  amp_3_result = intcode_calculate(codes: codes.dup, input: amp_2_result, phase_setting: phase_setting[2])
+  amp_4_result = intcode_calculate(codes: codes.dup, input: amp_3_result, phase_setting: phase_setting[3])
+  amp_5_result = intcode_calculate(codes: codes.dup, input: amp_4_result, phase_setting: phase_setting[4])
 
-[5, 6, 7, 8, 9].permutation.to_a.each do |phase_settings|
-  index = 0
-  next_input = 0
-  halt = false
-
-  while !halt
-    # Run intcode calculations
-    phase_setting = phase_settings[index]
-    pp next_input
-    result = intcode_calculate(codes: codes.dup, input: next_input, phase_setting: phase_setting)
-    if result.nil?
-      pp 'boom'
-      halt = true
-      phase_result = next_input
-      break
-    end
-
-
-    # Save phase_result if we're on the last amplifier
-    next_input = result
-    phase_result = next_input if index == 4
-    index = (index + 1) % 5
-  end
-
-  if phase_result > max
-    max = phase_result
-  end
+  amp_5_result
 end
 
-pp max
-# 139629729
+[5, 6, 7, 8, 9].permutation.to_a.each do |phase_setting|
+  result = run_amplifiers(codes: codes.dup, phase_setting: phase_setting)
+  pp result
+end
+
