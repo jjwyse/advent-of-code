@@ -1,14 +1,14 @@
-password = File.open('input.txt').readlines.first.chomp
+codes = File.open('input.txt').readlines[0].chomp.split(',').map(&:to_i)
 
 ###################
 # Part 1
 ###################
 # TODO
-#  1. Handle new parameter mode, called "relative" mode.  This mode is defined with a 2.  Same as position mode, except
-#     the address position is found by doing relative_base_mode + relative_position_value.
-#  2. Opcode 9 adjusts the relative base by the value of its only parameter. For example, if the relative base is 2000,
-#     then after the instruction 109,19, the relative base would be 2019.
-#  3. Add support for the computer's available to be much larger than the initial program. (I think already supported.)
+#  - [ ] Handle new parameter mode, called "relative" mode.  This mode is defined with a 2.  Same as position mode, except
+#        the address position is found by doing relative_base_mode + relative_position_value.
+#  - [ ] Opcode 9 adjusts the relative base by the value of its only parameter. For example, if the relative base is 2000,
+#        then after the instruction 109,19, the relative base would be 2019.
+#  - [ ] Add support for the computer's available to be much larger than the initial program. (I think already supported.)
 
 OPCODE_INDEX = 0..1
 PARAMETER_1_INDEX = 2
@@ -19,95 +19,113 @@ POSITION_MODE = 0
 IMMEDIATE_MODE = 1
 RELATIVE_MODE = 2
 
-def get_parameter(mode:, index:, relative_position_base_index:, codes:)
+def get_parameter(mode:, index:, base_index:, codes:)
   case mode
     when POSITION_MODE
-      index_of_parameter = codes[index]
-      codes[index_of_parameter]
+      codes[codes[index]]
     when IMMEDIATE_MODE
       codes[index]
     when RELATIVE_MODE
-      index_of_parameter = codes[relative_position_base_index + index]
-      codes[index_of_parameter]
+      codes[codes[index] + base_index]
     else
       raise "Encountered unknown parameter mode #{mode}"
   end
 end
 
-def intcode_calculate(codes:, input:, phase_setting:)
-  # State machine mutable variables
-  is_continue = true
-  used_phase_setting = false
-  opcode_index = 0
-  output = nil
-  relative_position_base_index = 0
+def get_write_parameter(mode:, index:, base_index:, codes:)
+  case mode
+    when RELATIVE_MODE
+      codes[index] + base_index
+    else
+      codes[index]
+  end
+end
 
-  while is_continue
+def intcode_calculate(codes:, input:)
+  # State machine mutable variables
+  opcode_index = 0
+  base_index = 0
+  outputs = []
+
+  while opcode_index < codes.length
     # Get instruction for next code
+    #
+    # ABCDE
+    #  1002
+    #
+    #DE - two-digit opcode,      02 == opcode 2
+    # C - mode of 1st parameter,  0 == position mode
+    # B - mode of 2nd parameter,  1 == immediate mode
+    # A - mode of 3rd parameter,  0 == position mode,
+
+    # eg: 1002
     instruction = codes[opcode_index]
+
+    # eg: [2, 0, 0, 1]
     instruction_digits = instruction.digits
 
-    # Determine parameters
     opcode = instruction_digits[OPCODE_INDEX].reverse.join.to_i
 
-    parameter_1_mode = instruction_digits[PARAMETER_1_INDEX] || 0
-    parameter_2_mode = instruction_digits[PARAMETER_2_INDEX] || 0
+    p1_mode = instruction_digits[PARAMETER_1_INDEX] || 0
+    p2_mode = instruction_digits[PARAMETER_2_INDEX] || 0
+    p3_mode = instruction_digits[PARAMETER_3_INDEX] || 0
 
-    parameter_1 = get_parameter(mode: parameter_1_mode, index: opcode_index + 1, relative_position_base_index: relative_position_base_index, codes: codes)
-    parameter_2 = get_parameter(mode: parameter_2_mode, index: opcode_index + 2, relative_position_base_index: relative_position_base_index, codes: codes)
-    parameter_3 = codes[opcode_index + 3]
+    p1 = get_parameter(mode: p1_mode, index: opcode_index + 1, base_index: base_index, codes: codes).to_i
+    p2 = get_parameter(mode: p2_mode, index: opcode_index + 2, base_index: base_index, codes: codes).to_i
+    p3 = get_write_parameter(mode: p3_mode, index: opcode_index + 3, base_index: base_index, codes: codes)
 
-    # Will be modified depending on the opcode, and how many instructions it takes
     case opcode
-      when 1, 2
-        result = opcode == 1 ? parameter_1 + parameter_2 : parameter_1 * parameter_2
-        codes[parameter_3] = result
+      when 1
+        codes[p3] = p1 + p2
+        opcode_index += 4
+      when 2
+        codes[p3] = p1 * p2
         opcode_index += 4
       when 3
-        result_index = codes[opcode_index + 1]
-        # Use phase_setting the first time, and input for all subsequent times we need an input
-        codes[result_index] = used_phase_setting ? input : phase_setting
-        used_phase_setting = true
+        # Only place where we write to a place that is *not* p3
+        idx = get_write_parameter(mode: p1_mode, index: opcode_index + 1, base_index: base_index, codes: codes)
+        codes[idx] = input
         opcode_index += 2
       when 4
-        output = parameter_1
+        outputs << p1
         opcode_index += 2
       when 5
-        if parameter_1 != 0
-          opcode_index = parameter_2
+        if p1 != 0
+          opcode_index = p2
         else
           opcode_index += 3
         end
       when 6
-        if parameter_1 == 0
-          opcode_index = parameter_2
+        if p1 == 0
+          opcode_index = p2
         else
           opcode_index += 3
         end
       when 7
-        if parameter_1 < parameter_2
-          codes[parameter_3] = 1
+        if p1 < p2
+          codes[p3] = 1
         else
-          codes[parameter_3] = 0
+          codes[p3] = 0
         end
         opcode_index += 4
       when 8
-        if parameter_1 == parameter_2
-          codes[parameter_3] = 1
+        if p1 == p2
+          codes[p3] = 1
         else
-          codes[parameter_3] = 0
+          codes[p3] = 0
         end
         opcode_index += 4
       when 9
-        relative_position_base_index = parameter_1
+        base_index += p1
         opcode_index += 2
       when 99
-        is_continue = false
-        opcode_index += 4
+        pp "Halting!"
+        return outputs
       else
         raise "Encountered unknown opcode #{opcode}"
     end
   end
-
-  output
 end
+
+pp intcode_calculate(codes: codes.dup, input: 1)
+
