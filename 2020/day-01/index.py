@@ -6,8 +6,9 @@ answer = []
 def find_values_that_equal(list, value):
     for i in list:
         for j in list:
-            if int(i) + int(j) == value:
-                return int(i), int(j)
+            for k in list:
+                if int(i) + int(j) + int(k) == value:
+                    return int(i), int(j), int(k)
 
-value1, value2 = find_values_that_equal(inputs, 2020)
-print(value1 * value2)
+value1, value2, value3 = find_values_that_equal(inputs, 2020)
+print(value1 * value2 * value3)
