@@ -68,4 +68,4 @@ if num != 1:
 
 num = password_counter('input.txt', is_valid_password_part_2)
 if num != 451:
-  raise Exception('Test 3 failed!', 451, num)
+  raise Exception('Test 4 failed!', 451, num)
