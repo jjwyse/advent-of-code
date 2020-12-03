@@ -23,8 +23,7 @@ def password_counter(file_name, is_valid_password_fn):
     # Parse the password
     password = split_input[2]
 
-    if is_valid_password_fn(min, max, character, password):
-      num_valid_passwords += 1
+    if is_valid_password_fn(min, max, character, password): num_valid_passwords += 1
 
   return num_valid_passwords
 
@@ -32,8 +31,7 @@ def is_valid_password_part_1(min, max, character, password):
   counter = 0
 
   for char in password:
-    if char == character:
-      counter += 1
+    if char == character: counter += 1
 
   return counter >= min and counter <= max
 
