@@ -1,16 +1,8 @@
-def is_valid_password(min, max, character, password):
-  counter = 0
+##########
+# PART 1 #
+##########
 
-  for char in password:
-    if char == character:
-      counter += 1
-
-  if (counter >= min and counter <= max):
-    return True
-
-  return False
-
-def valid_password_count(file_name):
+def password_counter(file_name, is_valid_password_fn):
   f = open(file_name, "r")
   inputs = f.read().splitlines()
 
@@ -31,17 +23,55 @@ def valid_password_count(file_name):
     # Parse the password
     password = split_input[2]
 
-    if is_valid_password(min, max, character, password):
+    if is_valid_password_fn(min, max, character, password):
       num_valid_passwords += 1
 
   return num_valid_passwords
 
+def is_valid_password_part_1(min, max, character, password):
+  counter = 0
+
+  for char in password:
+    if char == character:
+      counter += 1
+
+  if (counter >= min and counter <= max):
+    return True
+
+  return False
+
+#########
+# TESTS #
+#########
+
 # test_input.txt should have 2 valid passwords
-num = valid_password_count('test_input.txt')
+num = password_counter('test_input.txt', is_valid_password_part_1)
 if num != 2:
   raise Exception('Test 1 failed!', 2, num_valid_passwords)
 
 # input.txt should have 422 valid passwords
-num = valid_password_count('input.txt')
+num = password_counter('input.txt', is_valid_password_part_1)
 if num != 422:
   raise Exception('Test 2 failed!', 422, num_valid_passwords)
+
+##########
+# PART 2 #
+##########
+
+def is_valid_password_part_2(index_one, index_two, character, password):
+  # xor
+  if (password[index_one - 1] == character) != (password[index_two - 1] == character):
+    return True
+
+  return False
+
+#########
+# TESTS #
+#########
+num = password_counter('test_input.txt', is_valid_password_part_2)
+if num != 1:
+  raise Exception('Test 3 failed!', 1, num)
+
+num = password_counter('input.txt', is_valid_password_part_2)
+if num != 451:
+  raise Exception('Test 3 failed!', 451, num)
