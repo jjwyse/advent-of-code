@@ -35,10 +35,7 @@ def is_valid_password_part_1(min, max, character, password):
     if char == character:
       counter += 1
 
-  if (counter >= min and counter <= max):
-    return True
-
-  return False
+  return counter >= min and counter <= max
 
 #########
 # TESTS #
@@ -60,10 +57,7 @@ if num != 422:
 
 def is_valid_password_part_2(index_one, index_two, character, password):
   # xor
-  if (password[index_one - 1] == character) != (password[index_two - 1] == character):
-    return True
-
-  return False
+  return (password[index_one - 1] == character) != (password[index_two - 1] == character)
 
 #########
 # TESTS #
