@@ -54,3 +54,10 @@ if max(seats) != 820: raise Exception('Test failed!', 820, max(seats))
 inputs = parse_input('input.txt')
 seats = read_boarding_passes(inputs)
 if max(seats) != 978: raise Exception('Test failed!', 978, max(seats))
+
+# Part 2
+inputs = parse_input('input.txt')
+seats = read_boarding_passes(inputs)
+seats.sort()
+my_seat = [x for x in range(seats[0], seats[-1] + 1) if x not in seats][0]
+if my_seat != 727: raise Exception('Test failed!', 727, my_seat)
