@@ -54,6 +54,22 @@ def can_color_contain(rules, outer_color, inner_color, num_bags):
     return result
 
 
+def count_all_bags_inside(rules, outer_color):
+  outer_color_node = rules[outer_color]
+
+  inner_bag_count = 0
+
+  # No child bags, so doesn't contain anything
+  if len(outer_color_node.keys()) == 0:
+    return 0
+  else:
+    # Go through each bag that is needed inside outer_color bag, and traverse down
+    for inner_color in outer_color_node:
+      inner_bag_count += outer_color_node[inner_color] + (outer_color_node[inner_color] * count_all_bags_inside(rules, inner_color))
+
+  return inner_bag_count
+
+
 # Test input
 inputs = parse_input('test_input.txt')
 results = count_bags_containing(inputs, 'shiny gold', 1)
@@ -62,4 +78,19 @@ if len(results) != 4: raise Exception('Test failed!', 4, len(results))
 # Part 1
 inputs = parse_input('input.txt')
 results = count_bags_containing(inputs, 'shiny gold', 1)
-print(len(results))
+if len(results) != 257: raise Exception('Test failed!', 257, len(results))
+
+# Part 2 - test 1
+inputs = parse_input('test_input.txt')
+results = count_all_bags_inside(inputs, 'shiny gold')
+if results != 32: raise Exception('Test failed!', 32, results)
+
+# Part 2 - test 2
+inputs = parse_input('part_2_test_input.txt')
+results = count_all_bags_inside(inputs, 'shiny gold')
+if results != 126: raise Exception('Test failed!', 126, results)
+
+# Part 2
+inputs = parse_input('input.txt')
+results = count_all_bags_inside(inputs, 'shiny gold')
+print(results)
