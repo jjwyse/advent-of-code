@@ -30,7 +30,30 @@ def find_faulty_number(numbers, preamble_count, previous_count):
     if not found_match:
       return number
 
-  return False
+
+def sum_numbers_in_range(numbers, min_index, max_index):
+  summation = 0
+  for i in range(min_index, max_index):
+    summation += numbers[i]
+  return summation
+
+
+def find_faulty_number_part_2(numbers, magic_number):
+  min_index = 0
+  max_index = 1
+  while True:
+    if sum_numbers_in_range(numbers, min_index, max_index) == magic_number:
+      results = []
+      for i in range(min_index, max_index):
+        results.append(numbers[i])
+      results.sort()
+      return results[0] + results[-1]
+    else:
+      if max_index >= len(numbers):
+        min_index += 1
+        max_index = min_index + 1
+      else:
+        max_index += 1
 
 
 # Part 1 - test
@@ -42,3 +65,13 @@ if answer != 127: raise Exception('Test failed!', 127, answer)
 inputs = parse_input('input.txt')
 answer = find_faulty_number(inputs, 25, 25)
 if answer != 22477624: raise Exception('Test failed!', 22477624, answer)
+
+# Part 2 - test
+inputs = parse_input('test_input.txt')
+answer = find_faulty_number_part_2(inputs, 127)
+if answer != 62: raise Exception('Test failed!', 62, answer)
+
+# Part 2
+inputs = parse_input('input.txt')
+answer = find_faulty_number_part_2(inputs, 22477624)
+if answer != 2980044: raise Exception('Test failed!', 2980044, answer)
