@@ -7,7 +7,11 @@ file = File.open("#{Dir.pwd}/2023/day-05/input.txt")
 almanac = file.readlines.map(&:chomp).map(&:to_s)
 
 # Parse seeds, first line
-seeds = almanac.first.split(':')[1].split(' ').map(&:to_i)
+seed_ranges = almanac.first.split(':')[1].split(' ').map(&:to_i)
+seeds = seed_ranges.map.with_index do |seed_start, index|
+  next unless index.even?
+  (seed_start..(seed_start + seed_ranges[index + 1] - 1)).map(&:to_i)
+end.compact.flatten
 
 # Parse mappings
 active_array = nil
