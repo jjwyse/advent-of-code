@@ -34,7 +34,7 @@ class Hand
     'A': 14,
     'K': 13,
     'Q': 12,
-    'J': 11,
+    'J': 1,
     'T': 10,
     '9': 9,
     '8': 8,
@@ -78,6 +78,17 @@ class Hand
 
   def find_type
     tally = cards.tally
+    unless tally['J'].nil?
+      if tally.keys.count == 1
+        # All wild Jacks! This is just five of a kind
+        return :FIVE_OF_A_KIND
+      end
+
+      key = tally.reject { |card| card == 'J' }.sort_by { |card, _count| -CARDS[card.to_sym] }.sort_by { |_card, count| -count }.first[0]
+      tally[key] = tally[key] + tally['J']
+      tally.delete('J')
+    end
+
     case tally.keys.count
     when 1
       :FIVE_OF_A_KIND
@@ -109,8 +120,9 @@ hands = games.map do |game|
 end.sort
 
 result = hands.reverse.map.with_index do |hand, index|
+  pp "Hand: #{hand.cards.join(',')} is a #{hand.type} ranked: #{index + 1}"
   hand.bid * (index + 1)
 end
 
 pp result.sum
-# 246424613
+# 248256639
