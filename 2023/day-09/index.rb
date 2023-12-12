@@ -31,15 +31,15 @@ histories.each_with_index do |history, index|
   bucket = results[index].reverse
   bucket.each_with_index do |values, index|
     if index.zero?
-      values << 0
+      values.unshift(0)
       next
     end
 
-    values << bucket[index - 1].last + values.last
+    values.unshift(values.first - bucket[index - 1].first)
   end
 end
 
 next_values = results.map do |key, values|
-  values[0].last
+  values[0].first
 end
 pp next_values.sum
